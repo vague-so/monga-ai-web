@@ -7,6 +7,10 @@ declare namespace Cloudflare {
 	}
 	interface Env {
 		VALUE_FROM_CLOUDFLARE: "Hello from Cloudflare";
+		FAL_KEY: string;
+		CF_ACCOUNT_ID: string;
+		CF_AIG_NAME: string;
+		CF_AIG_TOKEN: string;
 	}
 }
 interface Env extends Cloudflare.Env {}
