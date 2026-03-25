@@ -12,5 +12,25 @@
 	"upload_source_maps": true,
 	"vars": {
 		"VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare"
-	}
+	},
+	"r2_buckets": [
+		{
+			"binding": "MY_BUCKET",
+			"bucket_name": "monga-ai-uploads"
+		}
+	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "PIPELINE_TRACKER",
+				"class_name": "PipelineTracker"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": ["PipelineTracker"]
+		}
+	]
 }
