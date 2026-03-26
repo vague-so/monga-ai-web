@@ -2,11 +2,10 @@ import { eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import type { DbClient } from '../../db/index';
 import { blocks, models } from '../../schemas';
-import type { NewBlock } from '../../schemas';
 import { AppError } from '../../lib/AppError';
 
 export type BlockPatch = Partial<
-  Omit<NewBlock, 'id' | 'createdAt' | 'updatedAt'>
+  Omit<typeof blocks.$inferSelect, 'id' | 'createdAt' | 'updatedAt'>
 >;
 
 export const updateBlock = async (
@@ -29,7 +28,6 @@ export const updateBlock = async (
       id: blocks.id,
       name: blocks.name,
       type: blocks.type,
-      inputSchema: blocks.inputSchema,
       defaults: blocks.defaults,
       createdAt: blocks.createdAt,
       updatedAt: blocks.updatedAt,

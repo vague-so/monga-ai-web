@@ -6,6 +6,7 @@ import {
   timestamp,
   index,
 } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { models } from './models';
 
 export const blocks = pgTable(
@@ -16,9 +17,12 @@ export const blocks = pgTable(
     type: text('type').notNull(),
     modelId: uuid('model_id')
       .notNull()
+      .unique()
       .references(() => models.id, { onDelete: 'restrict' }),
-    inputSchema: jsonb('input_schema').notNull(),
-    defaults: jsonb('defaults'),
+    defaults: jsonb('defaults')
+      .$type<Record<string, any>>()
+      .notNull()
+      .default(sql`'{}'::jsonb`),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
@@ -27,6 +31,3 @@ export const blocks = pgTable(
     index('blocks_model_idx').on(table.modelId),
   ],
 );
-
-export type Block = typeof blocks.$inferSelect;
-export type NewBlock = typeof blocks.$inferInsert;

@@ -19,7 +19,6 @@ export const listBlocks = async (db: DbClient, filters: ListBlocksInput) => {
         id: blocks.id,
         name: blocks.name,
         type: blocks.type,
-        inputSchema: blocks.inputSchema,
         defaults: blocks.defaults,
         createdAt: blocks.createdAt,
         updatedAt: blocks.updatedAt,
@@ -29,6 +28,8 @@ export const listBlocks = async (db: DbClient, filters: ListBlocksInput) => {
           providerId: models.providerId,
           type: models.type,
           costPerRun: models.costPerRun,
+          isActive: models.isActive,
+          config: models.config,
         },
       })
       .from(blocks)
