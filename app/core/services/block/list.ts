@@ -1,6 +1,6 @@
 import { eq, and, sql } from 'drizzle-orm';
 import type { DbClient } from '../../db/index';
-import { blocks } from '../../schemas';
+import { blocks, models } from '../../schemas';
 import type { ListBlocksInput } from '../../validators/block';
 
 export const listBlocks = async (db: DbClient, filters: ListBlocksInput) => {
@@ -13,14 +13,31 @@ export const listBlocks = async (db: DbClient, filters: ListBlocksInput) => {
 
   const whereClause = conditions.length ? and(...conditions) : undefined;
 
-  const [data, countResult] = await Promise.all([
+  const [rows, countResult] = await Promise.all([
     db
-      .select()
+      .select({
+        id: blocks.id,
+        name: blocks.name,
+        type: blocks.type,
+        inputSchema: blocks.inputSchema,
+        defaults: blocks.defaults,
+        createdAt: blocks.createdAt,
+        updatedAt: blocks.updatedAt,
+        model: {
+          id: models.id,
+          displayName: models.displayName,
+          providerId: models.providerId,
+          type: models.type,
+          costPerRun: models.costPerRun,
+        },
+      })
       .from(blocks)
+      .innerJoin(models, eq(blocks.modelId, models.id))
       .where(whereClause)
       .orderBy(blocks.createdAt)
       .limit(limit)
       .offset(offset),
+
     db
       .select({ count: sql<number>`count(*)::int` })
       .from(blocks)
@@ -29,8 +46,13 @@ export const listBlocks = async (db: DbClient, filters: ListBlocksInput) => {
 
   const totalResults = countResult[0]?.count ?? 0;
 
+  const blocksData = rows.map(({ model, ...rest }) => ({
+    ...rest,
+    modelId: model,
+  }));
+
   return {
-    data,
+    blocks: blocksData,
     pagination: {
       page,
       limit,
