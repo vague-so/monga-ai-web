@@ -1,17 +1,17 @@
 import { createDb } from '../../db/index';
-import { deleteBlock as deleteBlockService } from '../../services/block/delete';
+import { singleBlock as singleBlockService } from '../../services/block/single';
 import { ok } from '../../lib/response';
 import { handleError } from '../../lib/handleError';
 
-export const deleteBlock = async (
+export const singleBlock = async (
   _request: Request,
   env: Env,
   id: string,
 ): Promise<Response> => {
   try {
     const db = createDb(env.DATABASE_URL);
-    const deleted = await deleteBlockService(db, id);
-    return ok(deleted);
+    const block = await singleBlockService(db, id);
+    return ok(block);
   } catch (err) {
     return handleError(err);
   }
