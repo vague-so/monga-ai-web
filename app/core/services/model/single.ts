@@ -4,23 +4,18 @@ import type { DbClient } from "../../db/index";
 import { models } from "../../schemas";
 import { AppError } from "../../lib/AppError";
 
-const deleteModel = async (db: DbClient, id: string) => {
-	const existing = await db
-		.select({ id: models.id })
+const singleModel = async (db: DbClient, id: string) => {
+	const [model] = await db
+		.select()
 		.from(models)
 		.where(eq(models.id, id))
 		.limit(1);
 
-	if (existing.length === 0) {
+	if (!model) {
 		throw new AppError("Model not found", StatusCodes.NOT_FOUND);
 	}
 
-	const [deleted] = await db
-		.delete(models)
-		.where(eq(models.id, id))
-		.returning();
-
-	return deleted;
+	return model;
 };
 
-export default deleteModel;
+export default singleModel;

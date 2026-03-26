@@ -1,12 +1,7 @@
 import { createRequestHandler } from "react-router";
 
 import { PipelineTracker } from "../app/core/do/PipelineTracker";
-import { handleBlockRoutes } from "../app/core/routes/blockRoutes";
-import { handlePipelineRoutes } from "../app/core/routes/pipelineRoutes";
-import { handleModelRoutes } from "../app/core/routes/modelRoutes";
-import { handleTemplateRoutes } from "../app/core/routes/templateRoutes";
-import { handleGenerationRoutes } from "../app/core/routes/generationRoutes";
-import { handleR2Routes } from "../app/core/routes/r2Routes";
+import { routes } from "../app/core/routes";
 
 export { PipelineTracker };
 
@@ -24,42 +19,38 @@ const requestHandler = createRequestHandler(
 	import.meta.env.MODE,
 );
 
+const matchRoute = (pathname: string) =>
+	routes.find((route) => pathname.startsWith(route.path));
+
 export default {
 	async fetch(request, env, ctx) {
-		const { pathname } = new URL(request.url);
+		try {
+			const { pathname } = new URL(request.url);
 
-		if (pathname.startsWith("/api/block")) {
-			const res = await handleBlockRoutes(request, env);
-			if (res) return res;
+			const route = matchRoute(pathname);
+
+			if (route) {
+				const res = await route.handler(request, env);
+				if (res) return res;
+			}
+
+			return requestHandler(request, {
+				cloudflare: { env, ctx },
+			});
+		} catch (error) {
+			return new Response(
+				JSON.stringify({
+					success: false,
+					message:
+						error instanceof Error
+							? error.message
+							: "Internal server error",
+				}),
+				{
+					status: 500,
+					headers: { "Content-Type": "application/json" },
+				}
+			);
 		}
-
-		if (pathname.startsWith("/api/pipeline")) {
-			const res = await handlePipelineRoutes(request, env);
-			if (res) return res;
-		}
-
-		if (pathname.startsWith("/api/model")) {
-			const res = await handleModelRoutes(request, env);
-			if (res) return res;
-		}
-
-		if (pathname.startsWith("/api/template")) {
-			const res = await handleTemplateRoutes(request, env);
-			if (res) return res;
-		}
-
-		if (pathname.startsWith("/api/generation")) {
-			const res = await handleGenerationRoutes(request, env);
-			if (res) return res;
-		}
-
-		if (pathname.startsWith("/r2/")) {
-			const res = await handleR2Routes(request, env);
-			if (res) return res;
-		}
-
-		return requestHandler(request, {
-			cloudflare: { env, ctx },
-		});
 	},
 } satisfies ExportedHandler<Env>;

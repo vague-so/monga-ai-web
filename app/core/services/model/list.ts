@@ -3,10 +3,7 @@ import type { DbClient } from "../../db/index";
 import { models } from "../../schemas";
 import type { ListModelsInput } from "../../validators/model";
 
-export const getAllModels = async (
-	db: DbClient,
-	filters: ListModelsInput,
-) => {
+const listModels = async (db: DbClient, filters: ListModelsInput) => {
 	const { limit, offset, isActive, type } = filters;
 
 	const conditions = [];
@@ -41,3 +38,5 @@ export const getAllModels = async (
 		},
 	};
 };
+
+export default listModels;

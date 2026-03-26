@@ -9,7 +9,7 @@ export type ModelPatch = Partial<
 	Omit<NewModel, "id" | "createdAt" | "updatedAt">
 >;
 
-export const updateModelRecord = async (
+const updateModel = async (
 	db: DbClient,
 	id: string,
 	input: ModelPatch,
@@ -32,3 +32,5 @@ export const updateModelRecord = async (
 
 	return updated;
 };
+
+export default updateModel;

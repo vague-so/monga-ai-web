@@ -1,11 +1,11 @@
 import { createDb } from "../../db/index";
-import { insertModel } from "../../services/model/create";
+import { createModel as createModelService } from "../../services/model";
 import { parseBody } from "../../middlewares/validate";
 import { createModelSchema } from "../../validators/model";
 import { ok } from "../../lib/response";
 import { handleError } from "../../lib/handleError";
 
-export const createModel = async (
+const createModel = async (
 	request: Request,
 	env: Env,
 ): Promise<Response> => {
@@ -13,7 +13,7 @@ export const createModel = async (
 	if (error) return error;
 
 	try {
-		const created = await insertModel(createDb(env.DATABASE_URL), {
+		const created = await createModelService(createDb(env.DATABASE_URL), {
 			providerId: data.providerId,
 			modelId: data.modelId,
 			displayName: data.displayName,
@@ -27,3 +27,6 @@ export const createModel = async (
 		return handleError(err);
 	}
 };
+
+
+export default createModel;

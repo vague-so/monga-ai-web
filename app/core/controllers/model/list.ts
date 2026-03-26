@@ -1,11 +1,11 @@
 import { StatusCodes } from "http-status-codes";
 import { createDb } from "../../db/index";
-import { getAllModels } from "../../services/model/getAll";
+import { listModels as listModelsService } from "../../services/model";
 import { listModelsSchema } from "../../validators/model";
 import { ok, fail } from "../../lib/response";
 import { handleError } from "../../lib/handleError";
 
-export const listModels = async (
+const listModels = async (
 	request: Request,
 	env: Env,
 ): Promise<Response> => {
@@ -22,9 +22,11 @@ export const listModels = async (
 	}
 
 	try {
-		const data = await getAllModels(createDb(env.DATABASE_URL), result.data);
+		const data = await listModelsService(createDb(env.DATABASE_URL), result.data);
 		return ok(data);
 	} catch (err) {
 		return handleError(err);
 	}
 };
+
+export default listModels;

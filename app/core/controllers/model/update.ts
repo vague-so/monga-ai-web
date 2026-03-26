@@ -1,12 +1,12 @@
 import { StatusCodes } from "http-status-codes";
 import { createDb } from "../../db/index";
-import { updateModelRecord } from "../../services/model/update";
+import { updateModel as updateModelService } from "../../services/model";
 import { parseBody } from "../../middlewares/validate";
 import { updateModelSchema } from "../../validators/model";
 import { ok, fail } from "../../lib/response";
 import { handleError } from "../../lib/handleError";
 
-export const updateModel = async (
+const updateModel = async (
 	request: Request,
 	env: Env,
 	id: string,
@@ -15,10 +15,12 @@ export const updateModel = async (
 	if (error) return error;
 
 	try {
-		const updated = await updateModelRecord(createDb(env.DATABASE_URL), id, data);
+		const updated = await updateModelService(createDb(env.DATABASE_URL), id, data);
 		if (!updated) return fail("Model not found", StatusCodes.NOT_FOUND);
 		return ok(updated);
 	} catch (err) {
 		return handleError(err);
 	}
 };
+
+export default updateModel;
