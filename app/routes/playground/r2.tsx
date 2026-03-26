@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
-import { MenuIcon as SearchIcon, PieIcon as PieChart, PlayIcon as Play, MoreIcon as MoreVertical } from "../../components/icons";
+import { Search as SearchIcon, PieChart, Play, MoreVertical } from "lucide-react";
 
 const mockFiles = [
   { id: "f1", name: "mountain_sunrise.mp4", thumbnail: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=400", size: "2.4 MB", date: "2026-03-25", url: "#" },

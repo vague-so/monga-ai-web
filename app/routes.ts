@@ -10,6 +10,7 @@ export default [
   layout("routes/playground/layout.tsx", [
     route("playground", "routes/playground/generate.tsx"),
     route("playground/generations", "routes/playground/generations.tsx"),
+    route("playground/models", "routes/playground/models.tsx"),
     route("playground/r2", "routes/playground/r2.tsx"),
     route("playground/cost", "routes/playground/cost.tsx"),
   ]),

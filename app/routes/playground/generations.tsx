@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
-import { DownloadIcon, ChevronRightIcon } from "../../components/icons";
+import { Download as DownloadIcon, ChevronRight as ChevronRightIcon } from "lucide-react";
 
 const mockGenerations = [
   { id: "1", timestamp: "2026-03-25 14:20", provider: "fal.ai", model: "Kling", prompt: "A cinematic drone shot of a misty mountain range during sunrise...", status: "completed", cost: 0.25, duration: 18.2 },

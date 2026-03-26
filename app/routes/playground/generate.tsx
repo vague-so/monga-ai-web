@@ -2,15 +2,15 @@ import { useState } from "react";
 import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
 import {
-  DollarIcon,
-  UploadIcon,
-  MaximizeIcon,
-  SparklesIcon,
-  LoaderIcon,
-  DownloadIcon,
-  LinkIcon,
-  PlayIcon,
-} from "../../components/icons";
+  DollarSign as DollarIcon,
+  Upload as UploadIcon,
+  Maximize as MaximizeIcon,
+  Sparkles as SparklesIcon,
+  Loader2 as LoaderIcon,
+  Download as DownloadIcon,
+  Link as LinkIcon,
+  Play as PlayIcon,
+} from "lucide-react";
 
 const providers = [
   { id: "fal", name: "fal.ai", models: ["Kling", "Veo 3", "Flux 2 Pro"] },
