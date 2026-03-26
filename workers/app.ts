@@ -1,56 +1,23 @@
-import { createRequestHandler } from "react-router";
-
-import { PipelineTracker } from "../app/core/do/PipelineTracker";
-import { routes } from "../app/core/routes";
+import { PipelineTracker } from '../app/core/do/PipelineTracker';
+import { handleRoute, createErrorResponse } from './helpers';
 
 export { PipelineTracker };
 
-declare module "react-router" {
-	export interface AppLoadContext {
-		cloudflare: {
-			env: Env;
-			ctx: ExecutionContext;
-		};
-	}
+declare module 'react-router' {
+  export interface AppLoadContext {
+    cloudflare: {
+      env: Env;
+      ctx: ExecutionContext;
+    };
+  }
 }
 
-const requestHandler = createRequestHandler(
-	() => import("virtual:react-router/server-build"),
-	import.meta.env.MODE,
-);
-
-const matchRoute = (pathname: string) =>
-	routes.find((route) => pathname.startsWith(route.path));
-
 export default {
-	async fetch(request, env, ctx) {
-		try {
-			const { pathname } = new URL(request.url);
-
-			const route = matchRoute(pathname);
-
-			if (route) {
-				const res = await route.handler(request, env);
-				if (res) return res;
-			}
-
-			return requestHandler(request, {
-				cloudflare: { env, ctx },
-			});
-		} catch (error) {
-			return new Response(
-				JSON.stringify({
-					success: false,
-					message:
-						error instanceof Error
-							? error.message
-							: "Internal server error",
-				}),
-				{
-					status: 500,
-					headers: { "Content-Type": "application/json" },
-				}
-			);
-		}
-	},
+  async fetch(request: Request, env: Env, ctx: ExecutionContext) {
+    try {
+      return await handleRoute(request, env, ctx);
+    } catch (error) {
+      return createErrorResponse(error);
+    }
+  },
 } satisfies ExportedHandler<Env>;

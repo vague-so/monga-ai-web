@@ -1,29 +1,40 @@
-import { createModel, listModels, singleModel, updateModel, deleteModel } from "../controllers/model";
+import {
+  createModel,
+  listModels,
+  singleModel,
+  updateModel,
+  deleteModel,
+} from '../controllers/model';
+import { parseBody } from '../middlewares/validate';
+import { createModelSchema } from '../validators/model';
 
 const MODEL_ID_RE = /^\/api\/model\/([0-9a-f-]{36})$/;
 
 export const handleModelRoutes = async (
-	request: Request,
-	env: Env,
+  request: Request,
+  env: Env,
 ): Promise<Response | null> => {
-	const { pathname } = new URL(request.url);
-	const method = request.method;
+  const { pathname } = new URL(request.url);
+  const method = request.method;
 
-	if (pathname === "/api/model" && method === "POST") {
-		return createModel(request, env);
-	}
+  if (pathname === '/api/models' && method === 'POST') {
+    const { data, error } = await parseBody(request, createModelSchema);
+    if (error) return error;
 
-	if (pathname === "/api/model" && method === "GET") {
-		return listModels(request, env);
-	}
+    return createModel(data, env);
+  }
 
-	const match = pathname.match(MODEL_ID_RE);
-	if (match) {
-		const id = match[1];
-		if (method === "GET") return singleModel(request, env, id);
-		if (method === "PATCH") return updateModel(request, env, id);
-		if (method === "DELETE") return deleteModel(request, env, id);
-	}
+  if (pathname === '/api/models' && method === 'GET') {
+    return listModels(request, env);
+  }
 
-	return null;
+  const match = pathname.match(MODEL_ID_RE);
+  if (match) {
+    const id = match[1];
+    if (method === 'GET') return singleModel(request, env, id);
+    if (method === 'PATCH') return updateModel(request, env, id);
+    if (method === 'DELETE') return deleteModel(request, env, id);
+  }
+
+  return null;
 };
