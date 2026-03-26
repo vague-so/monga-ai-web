@@ -30,7 +30,7 @@ export const listModels = async (db: DbClient, filters: ListModelsInput) => {
   const totalResults = countResult[0]?.count ?? 0;
 
   return {
-    data,
+    models: data,
     pagination: {
       page,
       limit,
