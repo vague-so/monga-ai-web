@@ -28,11 +28,11 @@ export interface AIModelBase {
   type: string;
   costPerRun: number;
   isActive: boolean;
+  config: Record<string, any>;
 }
 
 export interface AIModel extends AIModelBase {
   id: string;
-  config: Record<string, string>;
   createdAt: string;
   updatedAt: string;
 }
@@ -52,6 +52,18 @@ export function ModelDialog({
 }: ModelDialogProps) {
   const isEdit = !!model?.id;
   const [loading, setLoading] = useState(false);
+  const defaultConfig = {
+    api_path: "fal-ai/birefnet",
+    parameters: {
+      image_url: { type: "text", label: "Upload Image", required: true },
+      mask_only: {
+        type: "boolean",
+        label: "Get Mask Only",
+        default: false,
+        required: false,
+      },
+    },
+  };
   const [formData, setFormData] = useState<AIModelBase>({
     providerId: "",
     modelId: "",
@@ -59,12 +71,15 @@ export function ModelDialog({
     type: "text-to-image",
     costPerRun: 0,
     isActive: true,
+    config: defaultConfig,
   });
+  const [configText, setConfigText] = useState("");
 
   useEffect(() => {
     if (open) {
       if (model) {
-        setFormData(model);
+        setFormData({ ...model, config: model.config || {} });
+        setConfigText(JSON.stringify(model.config || {}, null, 2));
       } else {
         setFormData({
           providerId: "",
@@ -73,7 +88,9 @@ export function ModelDialog({
           type: "text-to-image",
           costPerRun: 0,
           isActive: true,
+          config: defaultConfig,
         });
+        setConfigText(JSON.stringify(defaultConfig, null, 2));
       }
     }
   }, [open, model]);
@@ -94,14 +111,14 @@ export function ModelDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border border-zinc-800 bg-[#0a0a0b] text-zinc-100 rounded-2xl max-w-md max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/80">
+      <DialogContent className="border border-zinc-800 bg-[#0a0a0b] text-zinc-100 rounded-2xl max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/80">
         <DialogHeader className="pb-4">
           <DialogTitle className="text-xl font-bold bg-clip-text text-transparent bg-linear-to-r from-white to-zinc-400">
             {isEdit ? "Update AI Model" : "Create AI Model"}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-5 py-2">
+        <div className="grid grid-cols-2 gap-5 py-2">
           {/* Display Name */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">
@@ -204,7 +221,7 @@ export function ModelDialog({
           </div>
 
           {/* Active Status */}
-          <label className="flex items-center gap-3 cursor-pointer pt-2 group">
+          <label className="flex col-span-2 items-center gap-3 cursor-pointer pt-2 group">
             <div className="relative flex items-center justify-center">
               <input
                 type="checkbox"
@@ -223,6 +240,29 @@ export function ModelDialog({
               Model is Active
             </span>
           </label>
+
+          {/* Config (JSON) */}
+          <div className="flex flex-col col-span-2 gap-1.5 pt-2 border-t border-zinc-800/50 mt-2">
+            <label className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mt-2">
+              Config (JSON)
+            </label>
+            <textarea
+              value={configText}
+              onChange={(e) => setConfigText(e.target.value)}
+              onBlur={() => {
+                try {
+                  handleChange("config", JSON.parse(configText));
+                } catch (e) {
+                  // ignore
+                }
+              }}
+              rows={6}
+              className={cn(
+                "rounded-xl border border-zinc-700/50 bg-zinc-900/50 px-3 py-2 text-sm text-zinc-100 outline-none transition-all placeholder:text-zinc-600 font-mono",
+                "focus:border-indigo-500/60 focus:bg-zinc-900 focus:ring-4 focus:ring-indigo-500/10",
+              )}
+            />
+          </div>
         </div>
 
         <DialogFooter className="mt-4 pt-4 border-t border-zinc-800/50">

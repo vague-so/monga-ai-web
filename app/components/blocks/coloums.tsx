@@ -45,8 +45,8 @@ export function useBlockColumns({
       header: "Underlying Model ID",
       sortable: true,
       cell: (row) => (
-        <span className="text-zinc-400 text-xs font-mono bg-zinc-800/60 px-2 py-0.5 rounded">
-          {row.modelId}
+        <span className="text-zinc-400 text-xs font-mono bg-zinc-800/60 px-2 py-0.5 rounded truncate max-w-[200px] inline-block">
+          {row.modelId?.displayName || row.modelId?.id || row.modelId || "-"}
         </span>
       ),
     },

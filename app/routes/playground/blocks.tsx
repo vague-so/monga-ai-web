@@ -39,12 +39,9 @@ export async function loader(): Promise<LoaderData> {
         error: `API error: ${res.status}`,
       };
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const json = (await res.json()) as any;
     console.log(json);
-    const blocks: Block[] = Array.isArray(json?.data)
-      ? json.data
-      : (json?.data?.data ?? []);
+    const blocks: Block[] = json?.data?.blocks ?? [];
     console.log(blocks);
     const pagination: PaginationMeta = json?.data?.pagination ?? {
       page: 1,

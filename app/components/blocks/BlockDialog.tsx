@@ -9,7 +9,6 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
-import { XIcon, CheckIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -24,7 +23,7 @@ export interface BlockBase {
   id?: string;
   name: string;
   type: string;
-  modelId: string;
+  modelId: any;
   inputSchema: Record<string, any>;
   defaults: Record<string, any>;
 }
@@ -55,15 +54,15 @@ export function BlockDialog({
     type: "text-to-image",
     modelId: "",
     inputSchema: {
-        prompt: "text",
-        aspect_ratio: "enum",
-        num_inference_steps: "number"
+      prompt: "text",
+      aspect_ratio: "enum",
+      num_inference_steps: "number",
     },
     defaults: {
-        prompt: "A futuristic city in Pakistan with neon lights",
-        aspect_ratio: "16:9",
-        num_inference_steps: 4
-    }
+      prompt: "A futuristic city in Pakistan with neon lights",
+      aspect_ratio: "16:9",
+      num_inference_steps: 4,
+    },
   });
 
   const [models, setModels] = useState<any[]>([]);
@@ -73,9 +72,9 @@ export function BlockDialog({
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const res = await fetch("/api/model"); // assuming relative fetch works or the previous absolute one
-        const json = await res.json() as any;
-        setModels(json?.data?.data || []);
+        const res = await fetch("/api/model");
+        const json = (await res.json()) as any;
+        setModels(json?.data?.models || []);
       } catch (error) {
         console.error(error);
       }
@@ -87,22 +86,23 @@ export function BlockDialog({
     if (open) {
       if (model) {
         setFormData({
-            ...model,
-            inputSchema: model.inputSchema || {},
-            defaults: model.defaults || {}
+          ...model,
+          modelId: model.modelId?.id || model.modelId,
+          inputSchema: model.inputSchema || {},
+          defaults: model.defaults || {},
         });
         setSchemaText(JSON.stringify(model.inputSchema || {}, null, 2));
         setDefaultsText(JSON.stringify(model.defaults || {}, null, 2));
       } else {
         const defaultSchema = {
-            prompt: "text",
-            aspect_ratio: "enum",
-            num_inference_steps: "number"
+          prompt: "text",
+          aspect_ratio: "enum",
+          num_inference_steps: "number",
         };
         const defaultDefaults = {
-            prompt: "A futuristic city in Pakistan with neon lights",
-            aspect_ratio: "16:9",
-            num_inference_steps: 4
+          prompt: "A futuristic city in Pakistan with neon lights",
+          aspect_ratio: "16:9",
+          num_inference_steps: 4,
         };
         setFormData({
           name: "",

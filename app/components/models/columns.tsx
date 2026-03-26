@@ -71,6 +71,16 @@ export function useModelColumns({
       cell: (row) => <TypeBadge type={row.type} />,
     },
     {
+      key: "config",
+      header: "API Path",
+      sortable: false,
+      cell: (row) => (
+        <span className="text-zinc-500 text-xs font-mono bg-zinc-800/40 px-2 py-0.5 rounded truncate max-w-[150px] inline-block">
+          {row.config?.api_path || "{...}"}
+        </span>
+      ),
+    },
+    {
       key: "costPerRun",
       header: "Cost / Run",
       sortable: true,

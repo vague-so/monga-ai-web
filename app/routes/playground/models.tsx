@@ -41,7 +41,7 @@ export async function loader(): Promise<LoaderData> {
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const json = (await res.json()) as any;
-    const models: AIModel[] = json?.data?.data ?? [];
+    const models: AIModel[] = json?.data?.models ?? [];
     const pagination: PaginationMeta = json?.data?.pagination ?? {
       page: 1,
       limit: 20,
