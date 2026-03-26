@@ -1,14 +1,28 @@
+import { StatusCodes } from "http-status-codes";
 import { createDb } from "../../db/index";
 import { getAllModels } from "../../services/model/getAll";
-import { ok } from "../../lib/response";
+import { listModelsSchema } from "../../validators/model";
+import { ok, fail } from "../../lib/response";
 import { handleError } from "../../lib/handleError";
 
 export const listModels = async (
-	_request: Request,
+	request: Request,
 	env: Env,
 ): Promise<Response> => {
+	const url = new URL(request.url);
+	const raw = Object.fromEntries(url.searchParams);
+
+	const result = listModelsSchema.safeParse(raw);
+	if (!result.success) {
+		return fail(
+			"Invalid query params",
+			StatusCodes.UNPROCESSABLE_ENTITY,
+			result.error.issues.map((i) => ({ path: i.path.join("."), message: i.message })),
+		);
+	}
+
 	try {
-		const data = await getAllModels(createDb(env.DATABASE_URL));
+		const data = await getAllModels(createDb(env.DATABASE_URL), result.data);
 		return ok(data);
 	} catch (err) {
 		return handleError(err);

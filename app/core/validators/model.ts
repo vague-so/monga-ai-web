@@ -23,5 +23,16 @@ export const updateModelSchema = z
 		{ message: "No updatable fields provided" },
 	);
 
+export const listModelsSchema = z.object({
+	limit: z.coerce.number().int().min(1).max(100).optional().default(20),
+	offset: z.coerce.number().int().min(0).optional().default(0),
+	isActive: z
+		.enum(["true", "false"])
+		.transform((v) => v === "true")
+		.optional(),
+	type: z.string().optional(),
+});
+
 export type CreateModelInput = z.infer<typeof createModelSchema>;
 export type UpdateModelInput = z.infer<typeof updateModelSchema>;
+export type ListModelsInput = z.infer<typeof listModelsSchema>;
