@@ -1,30 +1,45 @@
-import { StatusCodes } from "http-status-codes";
-import { createDb } from "../../db/index";
-import { getAllModels } from "../../services/model/getAll";
-import { listModelsSchema } from "../../validators/model";
-import { ok, fail } from "../../lib/response";
-import { handleError } from "../../lib/handleError";
+import { StatusCodes } from 'http-status-codes';
+import { createDb } from '../../db/index';
+import { listModels as listModelsService } from '../../services/model/list';
+import { listModelsSchema } from '../../validators/model';
+import { ok, fail } from '../../lib/response';
+import { handleError } from '../../lib/handleError';
+
+function validateListModelsQuery(request: Request) {
+  const url = new URL(request.url);
+  const raw = Object.fromEntries(url.searchParams);
+
+  const result = listModelsSchema.safeParse(raw);
+
+  if (!result.success) {
+    return {
+      data: null,
+      error: fail(
+        'Invalid query params',
+        StatusCodes.UNPROCESSABLE_ENTITY,
+        result.error.issues.map((i) => ({
+          path: i.path.join('.'),
+          message: i.message,
+        })),
+      ),
+    };
+  }
+
+  return { data: result.data, error: null };
+}
 
 export const listModels = async (
-	request: Request,
-	env: Env,
+  request: Request,
+  env: Env,
 ): Promise<Response> => {
-	const url = new URL(request.url);
-	const raw = Object.fromEntries(url.searchParams);
+  const { data, error } = validateListModelsQuery(request);
+  if (error) return error;
 
-	const result = listModelsSchema.safeParse(raw);
-	if (!result.success) {
-		return fail(
-			"Invalid query params",
-			StatusCodes.UNPROCESSABLE_ENTITY,
-			result.error.issues.map((i) => ({ path: i.path.join("."), message: i.message })),
-		);
-	}
-
-	try {
-		const data = await getAllModels(createDb(env.DATABASE_URL), result.data);
-		return ok(data);
-	} catch (err) {
-		return handleError(err);
-	}
+  try {
+    const db = createDb(env.DATABASE_URL);
+    const models = await listModelsService(db, data);
+    return ok(models);
+  } catch (err) {
+    return handleError(err);
+  }
 };
