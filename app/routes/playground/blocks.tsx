@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import { useRevalidator } from "react-router";
-import type { Route } from "./+types/models";
 import { CustomTable, type Column } from "../../components/shared/CustomTable";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
 import {
-  ModelDialog,
-  type AIModelBase,
-  type AIModel,
-} from "@/components/models/AiModalDialog";
-import { useModelColumns } from "@/components/models/columns";
+  BlockDialog,
+  type Block,
+  type BlockBase,
+} from "@/components/blocks/BlockDialog";
+import { useBlockColumns } from "@/components/blocks/coloums";
+import type { Route } from "./+types/blocks";
 
 // Types
 
@@ -22,7 +22,7 @@ interface PaginationMeta {
 }
 
 interface LoaderData {
-  models: AIModel[];
+  blocks: Block[];
   pagination: PaginationMeta;
   error?: string;
 }
@@ -31,59 +31,63 @@ interface LoaderData {
 
 export async function loader(): Promise<LoaderData> {
   try {
-    const res = await fetch("http://localhost:5173/api/model");
+    const res = await fetch("http://localhost:5173/api/block");
     if (!res.ok) {
       return {
-        models: [],
+        blocks: [],
         pagination: { page: 1, limit: 20, totalPages: 1, totalResults: 0 },
         error: `API error: ${res.status}`,
       };
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const json = (await res.json()) as any;
-    const models: AIModel[] = json?.data?.data ?? [];
+    console.log(json);
+    const blocks: Block[] = Array.isArray(json?.data)
+      ? json.data
+      : (json?.data?.data ?? []);
+    console.log(blocks);
     const pagination: PaginationMeta = json?.data?.pagination ?? {
       page: 1,
       limit: 20,
       totalPages: 1,
-      totalResults: 0,
+      totalResults: blocks.length,
     };
-    return { models, pagination };
+    return { blocks, pagination };
   } catch {
     return {
-      models: [],
+      blocks: [],
       pagination: { page: 1, limit: 20, totalPages: 1, totalResults: 0 },
-      error: "Failed to reach models API.",
+      error: "Failed to reach blocks API.",
     };
   }
 }
 
-export default function ModelsPage({ loaderData }: Route.ComponentProps) {
-  const { models, pagination, error } = loaderData as LoaderData;
+export default function BlocksPage({ loaderData }: Route.ComponentProps) {
+  const { blocks, pagination, error } = loaderData as LoaderData;
   const revalidator = useRevalidator();
 
-  const [isModelDialogOpen, setModelDialogOpen] = useState(false);
+  const [isBlockDialogOpen, setBlockDialogOpen] = useState(false);
   const [isConfirmOpen, setConfirmOpen] = useState(false);
 
-  const [selectedModel, setSelectedModel] = useState<AIModel | null>(null);
-  const [modelToDelete, setModelToDelete] = useState<AIModel | null>(null);
+  const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
+  const [blockToDelete, setBlockToDelete] = useState<Block | null>(null);
 
-  const modelColumns = useModelColumns({
+  const blockColumns = useBlockColumns({
     onEdit: (model) => {
-      setSelectedModel(model);
-      setModelDialogOpen(true);
+      setSelectedBlock(model);
+      setBlockDialogOpen(true);
     },
     onDelete: (model) => {
-      setModelToDelete(model);
+      setBlockToDelete(model);
       setConfirmOpen(true);
     },
   });
 
   //  Handlers
 
-  const handleSaveModel = async (formData: AIModelBase) => {
+  const handleSaveModel = async (formData: BlockBase) => {
     try {
-      const res = await fetch("http://localhost:5173/api/model", {
+      const res = await fetch("http://localhost:5173/api/block", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -99,11 +103,11 @@ export default function ModelsPage({ loaderData }: Route.ComponentProps) {
     }
   };
 
-  const handleUpdateModel = async (formData: AIModelBase) => {
+  const handleUpdateModel = async (formData: BlockBase) => {
     if (!formData.id) return;
     try {
       const res = await fetch(
-        `http://localhost:5173/api/model/${formData.id}`,
+        `http://localhost:5173/api/block/${formData.id}`,
         {
           method: "PATCH",
           headers: {
@@ -122,10 +126,10 @@ export default function ModelsPage({ loaderData }: Route.ComponentProps) {
   };
 
   const handleDeleteModel = async () => {
-    if (!modelToDelete) return;
+    if (!blockToDelete) return;
     try {
       const res = await fetch(
-        `http://localhost:5173/api/model/${modelToDelete.id}`,
+        `http://localhost:5173/api/block/${blockToDelete.id}`,
         {
           method: "DELETE",
         },
@@ -143,9 +147,9 @@ export default function ModelsPage({ loaderData }: Route.ComponentProps) {
     <div className="p-8 container mx-auto space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 glass p-6 rounded-2xl mb-8 border-indigo-500/5">
         <div className="space-y-1">
-          <h2 className="text-xl font-bold text-zinc-100">AI Models</h2>
+          <h2 className="text-xl font-bold text-zinc-100">AI blocks</h2>
           <p className="text-sm text-zinc-500">
-            Browse and manage available AI models.
+            Browse and manage available AI blocks.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -155,13 +159,13 @@ export default function ModelsPage({ loaderData }: Route.ComponentProps) {
           </span>
           <Button
             onClick={() => {
-              setSelectedModel(null);
-              setModelDialogOpen(true);
+              setSelectedBlock(null);
+              setBlockDialogOpen(true);
             }}
             className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2 shadow-lg hover:shadow-indigo-500/20"
           >
             <PlusCircle className="size-4" />
-            Add Model
+            Add Block
           </Button>
         </div>
       </div>
@@ -174,26 +178,26 @@ export default function ModelsPage({ loaderData }: Route.ComponentProps) {
 
       {!error && (
         <CustomTable
-          data={models}
-          columns={modelColumns}
+          data={blocks}
+          columns={blockColumns}
           searchable
-          searchPlaceholder="Search models by name, ID, or provider..."
+          searchPlaceholder="Search blocks by name, ID, or provider..."
           defaultPageSize={20}
         />
       )}
 
-      <ModelDialog
-        open={isModelDialogOpen}
-        onOpenChange={setModelDialogOpen}
-        model={selectedModel || undefined}
-        onSave={selectedModel ? handleUpdateModel : handleSaveModel}
+      <BlockDialog
+        open={isBlockDialogOpen}
+        onOpenChange={setBlockDialogOpen}
+        model={selectedBlock || undefined}
+        onSave={selectedBlock ? handleUpdateModel : handleSaveModel}
       />
 
       <ConfirmationDialog
         open={isConfirmOpen}
         onOpenChange={setConfirmOpen}
-        title="Delete Model"
-        description={`Are you sure you want to delete ${modelToDelete?.displayName || "this model"}? This action cannot be undone.`}
+        title="Delete Block"
+        description={`Are you sure you want to delete ${blockToDelete?.name || "this block"}? This action cannot be undone.`}
         confirmLabel="Delete"
         cancelLabel="Cancel"
         onConfirm={handleDeleteModel}
