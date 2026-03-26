@@ -12,11 +12,11 @@ export const handleBlockRoutes = async (
 	const { pathname } = new URL(request.url);
 	const method = request.method;
 
-	if (pathname === "/api/block/list" && method === "GET") {
+	if (pathname === "/api/block" && method === "GET") {
 		return listBlocks(request, env);
 	}
 
-	if (pathname === "/api/block/create" && method === "POST") {
+	if (pathname === "/api/block" && method === "POST") {
 		return createBlock(request, env);
 	}
 

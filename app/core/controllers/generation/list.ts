@@ -1,7 +1,9 @@
+import { StatusCodes } from "http-status-codes";
 import { createDb } from "../../db/index";
 import { getGenerations } from "../../services/generation/list";
 import { listGenerationsSchema } from "../../validators/generation";
 import { ok, fail } from "../../lib/response";
+import { handleError } from "../../lib/handleError";
 import type { GenerationStatus } from "../../schemas";
 
 export const listGenerations = async (
@@ -15,16 +17,20 @@ export const listGenerations = async (
 	if (!result.success) {
 		return fail(
 			"Invalid query params",
-			422,
+			StatusCodes.UNPROCESSABLE_ENTITY,
 			result.error.issues.map((i) => ({ path: i.path.join("."), message: i.message })),
 		);
 	}
 
-	const { status, limit, offset } = result.data;
-	const data = await getGenerations(createDb(env.DATABASE_URL), {
-		status: status as GenerationStatus | undefined,
-		limit,
-		offset,
-	});
-	return ok(data);
+	try {
+		const { status, limit, offset } = result.data;
+		const data = await getGenerations(createDb(env.DATABASE_URL), {
+			status: status as GenerationStatus | undefined,
+			limit,
+			offset,
+		});
+		return ok(data);
+	} catch (err) {
+		return handleError(err);
+	}
 };

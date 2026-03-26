@@ -1,8 +1,10 @@
+import { StatusCodes } from "http-status-codes";
 import { createDb } from "../../db/index";
 import { updateBlockDefinition } from "../../services/block/update";
 import { parseBody } from "../../middlewares/validate";
 import { updateBlockSchema } from "../../validators/block";
 import { ok, fail } from "../../lib/response";
+import { handleError } from "../../lib/handleError";
 
 export const updateBlock = async (
 	request: Request,
@@ -12,12 +14,11 @@ export const updateBlock = async (
 	const { data, error } = await parseBody(request, updateBlockSchema);
 	if (error) return error;
 
-	const updated = await updateBlockDefinition(
-		createDb(env.DATABASE_URL),
-		id,
-		data,
-	);
-
-	if (!updated) return fail("Block definition not found", 404);
-	return ok(updated);
+	try {
+		const updated = await updateBlockDefinition(createDb(env.DATABASE_URL), id, data);
+		if (!updated) return fail("Block not found", StatusCodes.NOT_FOUND);
+		return ok(updated);
+	} catch (err) {
+		return handleError(err);
+	}
 };

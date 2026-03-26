@@ -1,5 +1,6 @@
 import type { ZodSchema } from "zod";
 import { ZodError } from "zod";
+import { StatusCodes } from "http-status-codes";
 import { fail } from "../lib/response";
 
 type ParseSuccess<T> = { data: T; error: null };
@@ -20,14 +21,21 @@ export const parseBody = async <T>(
 	try {
 		raw = await request.json();
 	} catch {
-		return { data: null, error: fail("Invalid JSON body", 400) };
+		return {
+			data: null,
+			error: fail("Invalid JSON body", StatusCodes.BAD_REQUEST),
+		};
 	}
 
 	const result = schema.safeParse(raw);
 	if (!result.success) {
 		return {
 			data: null,
-			error: fail("Validation failed", 422, formatZodError(result.error)),
+			error: fail(
+				"Validation failed",
+				StatusCodes.UNPROCESSABLE_ENTITY,
+				formatZodError(result.error),
+			),
 		};
 	}
 

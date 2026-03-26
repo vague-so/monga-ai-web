@@ -21,6 +21,7 @@
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"drizzle-orm": "^0.45.1",
+		"http-status-codes": "^2.3.0",
 		"isbot": "5.1.32",
 		"radix-ui": "^1.4.3",
 		"react": "^19.0.0",

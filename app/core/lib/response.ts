@@ -1,4 +1,6 @@
-export const jsonResponse = (data: unknown, status = 200) =>
+import { StatusCodes } from "http-status-codes";
+
+export const jsonResponse = (data: unknown, status = StatusCodes.OK) =>
 	Response.json(data, { status });
 
 export const ok = (data: unknown) =>
