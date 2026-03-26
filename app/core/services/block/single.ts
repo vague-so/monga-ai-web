@@ -1,19 +1,39 @@
 import { eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import type { DbClient } from '../../db/index';
-import { blocks } from '../../schemas';
+import { blocks, models } from '../../schemas';
 import { AppError } from '../../lib/AppError';
 
 export const singleBlock = async (db: DbClient, id: string) => {
-  const [block] = await db
-    .select()
+  const [row] = await db
+    .select({
+      id: blocks.id,
+      name: blocks.name,
+      type: blocks.type,
+      inputSchema: blocks.inputSchema,
+      defaults: blocks.defaults,
+      createdAt: blocks.createdAt,
+      updatedAt: blocks.updatedAt,
+      model: {
+        id: models.id,
+        displayName: models.displayName,
+        providerId: models.providerId,
+        type: models.type,
+        costPerRun: models.costPerRun,
+      },
+    })
     .from(blocks)
+    .innerJoin(models, eq(blocks.modelId, models.id))
     .where(eq(blocks.id, id))
     .limit(1);
 
-  if (!block) {
+  if (!row) {
     throw new AppError(`Block not found with id: ${id}`, StatusCodes.NOT_FOUND);
   }
 
-  return block;
+  const { model, ...rest } = row;
+  return {
+    ...rest,
+    modelId: model,
+  };
 };
