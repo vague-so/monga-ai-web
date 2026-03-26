@@ -1,12 +1,8 @@
-import {
-  createModel,
-  listModels,
-  singleModel,
-  updateModel,
-  deleteModel,
-} from '../controllers/model';
-import { parseBody } from '../middlewares/validate';
-import { createModelSchema } from '../validators/model';
+import { createModel } from '../controllers/model/create';
+import { listModels } from '../controllers/model/list';
+import { singleModel } from '../controllers/model/single';
+import { updateModel } from '../controllers/model/update';
+import { deleteModel } from '../controllers/model/delete';
 
 const MODEL_ID_RE = /^\/api\/model\/([0-9a-f-]{36})$/;
 
@@ -17,14 +13,11 @@ export const handleModelRoutes = async (
   const { pathname } = new URL(request.url);
   const method = request.method;
 
-  if (pathname === '/api/models' && method === 'POST') {
-    const { data, error } = await parseBody(request, createModelSchema);
-    if (error) return error;
-
-    return createModel(data, env);
+  if (pathname === '/api/model' && method === 'POST') {
+    return createModel(request, env);
   }
 
-  if (pathname === '/api/models' && method === 'GET') {
+  if (pathname === '/api/model' && method === 'GET') {
     return listModels(request, env);
   }
 

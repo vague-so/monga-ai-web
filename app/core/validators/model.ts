@@ -24,8 +24,8 @@ export const updateModelSchema = z
 	);
 
 export const listModelsSchema = z.object({
+	page: z.coerce.number().int().min(1).optional().default(1),
 	limit: z.coerce.number().int().min(1).max(100).optional().default(20),
-	offset: z.coerce.number().int().min(0).optional().default(0),
 	isActive: z
 		.enum(["true", "false"])
 		.transform((v) => v === "true")

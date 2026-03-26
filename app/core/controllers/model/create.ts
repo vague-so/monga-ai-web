@@ -1,24 +1,22 @@
 import { createDb } from '../../db/index';
-import { createModel as createModelService } from '../../services/model';
+import { createModel as createModelService } from '../../services/model/create';
+import { parseBody } from '../../middlewares/validate';
+import { createModelSchema } from '../../validators/model';
 import { ok } from '../../lib/response';
 import { handleError } from '../../lib/handleError';
-import type { CreateModelInput } from '../../validators/model';
 
-const createModel = async (data: CreateModelInput, env: Env): Promise<Response> => {
+export const createModel = async (
+  request: Request,
+  env: Env,
+): Promise<Response> => {
+  const { data, error } = await parseBody(request, createModelSchema);
+  if (error) return error;
+
   try {
-    const created = await createModelService(createDb(env.DATABASE_URL), {
-      providerId: data.providerId,
-      modelId: data.modelId,
-      displayName: data.displayName,
-      type: data.type,
-      costPerRun: data.costPerRun,
-      isActive: data.isActive ?? true,
-      config: data.config ?? null,
-    });
+    const db = createDb(env.DATABASE_URL);
+    const created = await createModelService(db, data);
     return ok(created);
   } catch (err) {
     return handleError(err);
   }
 };
-
-export default createModel;

@@ -6,9 +6,8 @@ const requestHandler = createRequestHandler(
   import.meta.env.MODE,
 );
 
-function matchRoute(pathname: string) {
-  return routes.find((route) => pathname.startsWith(route.path));
-}
+const matchApiRoute = (pathname: string) =>
+  routes.find((r) => pathname.startsWith(r.path));
 
 export async function handleRoute(
   request: Request,
@@ -17,25 +16,28 @@ export async function handleRoute(
 ) {
   const { pathname } = new URL(request.url);
 
-  const route = matchRoute(pathname);
+  if (pathname.startsWith('/api/')) {
+    const route = matchApiRoute(pathname);
 
-  if (route) {
-    const res = await route.handler(request, env);
-    if (res) return res;
+    if (route) {
+      const res = await route.handler(request, env);
+      if (res) return res;
+    }
+
+    return new Response(
+      JSON.stringify({ success: false, message: 'API route not found' }),
+      { status: 404, headers: { 'Content-Type': 'application/json' } },
+    );
   }
 
   return requestHandler(request, { cloudflare: { env, ctx } });
 }
 
-export function createErrorResponse(error: unknown) {
-  return new Response(
+export const createErrorResponse = (error: unknown) =>
+  new Response(
     JSON.stringify({
       success: false,
       message: error instanceof Error ? error.message : 'Internal server error',
     }),
-    {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    },
+    { status: 500, headers: { 'Content-Type': 'application/json' } },
   );
-}

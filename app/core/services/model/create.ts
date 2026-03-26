@@ -5,9 +5,9 @@ import { models } from '../../schemas';
 import type { NewModel } from '../../schemas';
 import { AppError } from '../../lib/AppError';
 
-const createModel = async (db: DbClient, input: NewModel) => {
+export const createModel = async (db: DbClient, input: NewModel) => {
   const existing = await db
-    .select()
+    .select({ id: models.id })
     .from(models)
     .where(
       and(
@@ -17,7 +17,7 @@ const createModel = async (db: DbClient, input: NewModel) => {
     )
     .limit(1);
 
-  if (existing.length > 0) {
+  if (existing.length) {
     throw new AppError(
       `Model already exists with providerId: ${input.providerId} and modelId: ${input.modelId}`,
       StatusCodes.CONFLICT,
@@ -27,5 +27,3 @@ const createModel = async (db: DbClient, input: NewModel) => {
   const [created] = await db.insert(models).values(input).returning();
   return created;
 };
-
-export default createModel;
