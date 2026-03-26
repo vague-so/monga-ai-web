@@ -18,9 +18,7 @@ export function useBlockColumns({
       header: "Block Name",
       sortable: true,
       cell: (row) => (
-        <span className="text-zinc-100 text-sm font-semibold">
-          {row.name}
-        </span>
+        <span className="text-zinc-100 text-sm font-semibold">{row.name}</span>
       ),
     },
     {
@@ -51,6 +49,26 @@ export function useBlockColumns({
       ),
     },
     {
+      key: "defaults",
+      header: "Defaults",
+      sortable: false,
+      cell: (row) => {
+        const keys = Object.keys(row.defaults || {});
+        if (keys.length === 0) return <span className="text-zinc-500 text-xs">-</span>;
+        
+        return (
+          <div className="flex flex-wrap gap-1 max-w-[200px]">
+            {Object.entries(row.defaults).map(([k, v]) => (
+              <span key={k} className="text-[10px] bg-zinc-800/80 border border-zinc-700/50 text-zinc-300 px-1.5 py-0.5 rounded flex items-center gap-1 truncate max-w-[150px]">
+                <span className="text-zinc-500">{k}:</span>
+                <span className="font-mono text-indigo-300">{String(v)}</span>
+              </span>
+            ))}
+          </div>
+        );
+      },
+    },
+    {
       key: "createdAt",
       header: "Added",
       sortable: true,
@@ -66,7 +84,7 @@ export function useBlockColumns({
       width: "80px",
       align: "center",
       cell: (row) => (
-        <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center justify-center gap-2 transition-opacity">
           <button
             onClick={(e) => {
               e.stopPropagation();

@@ -24,7 +24,6 @@ export interface BlockBase {
   name: string;
   type: string;
   modelId: any;
-  inputSchema: Record<string, any>;
   defaults: Record<string, any>;
 }
 
@@ -53,21 +52,10 @@ export function BlockDialog({
     name: "",
     type: "text-to-image",
     modelId: "",
-    inputSchema: {
-      prompt: "text",
-      aspect_ratio: "enum",
-      num_inference_steps: "number",
-    },
-    defaults: {
-      prompt: "A futuristic city in Pakistan with neon lights",
-      aspect_ratio: "16:9",
-      num_inference_steps: 4,
-    },
+    defaults: {},
   });
 
   const [models, setModels] = useState<any[]>([]);
-  const [schemaText, setSchemaText] = useState("");
-  const [defaultsText, setDefaultsText] = useState("");
 
   useEffect(() => {
     const fetchModels = async () => {
@@ -88,34 +76,30 @@ export function BlockDialog({
         setFormData({
           ...model,
           modelId: model.modelId?.id || model.modelId,
-          inputSchema: model.inputSchema || {},
           defaults: model.defaults || {},
         });
-        setSchemaText(JSON.stringify(model.inputSchema || {}, null, 2));
-        setDefaultsText(JSON.stringify(model.defaults || {}, null, 2));
       } else {
-        const defaultSchema = {
-          prompt: "text",
-          aspect_ratio: "enum",
-          num_inference_steps: "number",
-        };
-        const defaultDefaults = {
-          prompt: "A futuristic city in Pakistan with neon lights",
-          aspect_ratio: "16:9",
-          num_inference_steps: 4,
-        };
         setFormData({
           name: "",
           type: "text-to-image",
           modelId: "",
-          inputSchema: defaultSchema,
-          defaults: defaultDefaults,
+          defaults: {},
         });
-        setSchemaText(JSON.stringify(defaultSchema, null, 2));
-        setDefaultsText(JSON.stringify(defaultDefaults, null, 2));
       }
     }
   }, [open, model]);
+
+  const handleDefaultChange = (key: string, value: any) => {
+    setFormData((prev) => {
+      const newDefaults = { ...prev.defaults };
+      if (value === undefined) {
+        delete newDefaults[key];
+      } else {
+        newDefaults[key] = value;
+      }
+      return { ...prev, defaults: newDefaults };
+    });
+  };
 
   const handleChange = (field: keyof BlockBase, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -130,6 +114,9 @@ export function BlockDialog({
       setLoading(false);
     }
   };
+
+  const selectedModelData = models.find((m) => m.id === formData.modelId);
+  const selectedModelConfig = selectedModelData?.config;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -157,7 +144,26 @@ export function BlockDialog({
               )}
             />
           </div>
-
+          {/* Model Type */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">
+              Model Type
+            </label>
+            <Select
+              value={formData.type}
+              onValueChange={(v) => handleChange("type", v)}
+            >
+              <SelectTrigger className="h-11 w-full rounded-xl border-zinc-700/50 bg-zinc-900/50 text-zinc-100 focus:ring-indigo-500/30">
+                <SelectValue placeholder="Select Model Type" />
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                <SelectItem value="text-to-image">Text → Image</SelectItem>
+                <SelectItem value="image-to-image">Image → Image</SelectItem>
+                <SelectItem value="text-to-video">Text → Video</SelectItem>
+                <SelectItem value="image-to-video">Image → Video</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           {/* Model ID - Select from API */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">
@@ -180,72 +186,61 @@ export function BlockDialog({
             </Select>
           </div>
 
-          {/* Model Type */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">
-              Model Type
-            </label>
-            <Select
-              value={formData.type}
-              onValueChange={(v) => handleChange("type", v)}
-            >
-              <SelectTrigger className="h-11 w-full rounded-xl border-zinc-700/50 bg-zinc-900/50 text-zinc-100 focus:ring-indigo-500/30">
-                <SelectValue placeholder="Select Model Type" />
-              </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
-                <SelectItem value="text-to-image">Text → Image</SelectItem>
-                <SelectItem value="image-to-image">Image → Image</SelectItem>
-                <SelectItem value="text-to-video">Text → Video</SelectItem>
-                <SelectItem value="image-to-video">Image → Video</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Input Schema */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">
-              Input Schema (JSON)
-            </label>
-            <textarea
-              value={schemaText}
-              onChange={(e) => setSchemaText(e.target.value)}
-              onBlur={() => {
-                try {
-                  handleChange("inputSchema", JSON.parse(schemaText));
-                } catch (e) {
-                  // ignore
-                }
-              }}
-              rows={4}
-              className={cn(
-                "rounded-xl border border-zinc-700/50 bg-zinc-900/50 px-3 py-2 text-sm text-zinc-100 outline-none transition-all placeholder:text-zinc-600 font-mono",
-                "focus:border-indigo-500/60 focus:bg-zinc-900 focus:ring-4 focus:ring-indigo-500/10",
-              )}
-            />
-          </div>
-
-          {/* Defaults */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">
-              Defaults (JSON)
-            </label>
-            <textarea
-              value={defaultsText}
-              onChange={(e) => setDefaultsText(e.target.value)}
-              onBlur={() => {
-                try {
-                  handleChange("defaults", JSON.parse(defaultsText));
-                } catch (e) {
-                  // ignore
-                }
-              }}
-              rows={4}
-              className={cn(
-                "rounded-xl border border-zinc-700/50 bg-zinc-900/50 px-3 py-2 text-sm text-zinc-100 outline-none transition-all placeholder:text-zinc-600 font-mono",
-                "focus:border-indigo-500/60 focus:bg-zinc-900 focus:ring-4 focus:ring-indigo-500/10",
-              )}
-            />
-          </div>
+          {/* Dynamic Model Parameters */}
+          {selectedModelConfig && selectedModelConfig.parameters && Object.keys(selectedModelConfig.parameters).length > 0 && (
+            <div className="flex flex-col gap-3 pt-4 border-t border-zinc-800/50 mt-2">
+              <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">
+                Configure Default Parameters
+              </h3>
+              {Object.entries(selectedModelConfig.parameters).map(([key, param]: [string, any]) => (
+                <div key={key} className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-zinc-300">
+                    {param.label || key} <span className="text-zinc-500 text-xs ml-2 uppercase opacity-80">({param.type})</span>
+                  </label>
+                  {param.type === "boolean" ? (
+                    <Select
+                      value={formData.defaults[key] !== undefined ? String(formData.defaults[key]) : "unset"}
+                      onValueChange={(v) => {
+                        if (v === "unset") handleDefaultChange(key, undefined);
+                        else handleDefaultChange(key, v === "true");
+                      }}
+                    >
+                      <SelectTrigger className="h-11 w-full rounded-xl border-zinc-700/50 bg-zinc-900/50 text-zinc-100 focus:ring-indigo-500/30">
+                        <SelectValue placeholder="Not Set" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                        <SelectItem value="unset">Not Set (Default)</SelectItem>
+                        <SelectItem value="true">True</SelectItem>
+                        <SelectItem value="false">False</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : param.type === "number" ? (
+                    <input
+                      type="number"
+                      value={formData.defaults[key] ?? ""}
+                      onChange={(e) => handleDefaultChange(key, e.target.value === "" ? undefined : Number(e.target.value))}
+                      placeholder={`e.g. ${param.default ?? ""}`}
+                      className={cn(
+                        "h-11 rounded-xl border border-zinc-700/50 bg-zinc-900/50 px-3 text-sm text-zinc-100 outline-none transition-all placeholder:text-zinc-600",
+                        "focus:border-indigo-500/60 focus:bg-zinc-900 focus:ring-4 focus:ring-indigo-500/10",
+                      )}
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      value={formData.defaults[key] ?? ""}
+                      onChange={(e) => handleDefaultChange(key, e.target.value === "" ? undefined : e.target.value)}
+                      placeholder={`e.g. ${param.default ?? ""}`}
+                      className={cn(
+                        "h-11 rounded-xl border border-zinc-700/50 bg-zinc-900/50 px-3 text-sm text-zinc-100 outline-none transition-all placeholder:text-zinc-600",
+                        "focus:border-indigo-500/60 focus:bg-zinc-900 focus:ring-4 focus:ring-indigo-500/10",
+                      )}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <DialogFooter className="mt-4 pt-4 border-t border-zinc-800/50">
