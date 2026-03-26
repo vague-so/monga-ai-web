@@ -4,15 +4,16 @@ import type { DbClient } from '../../db/index';
 import { blocks } from '../../schemas';
 import { AppError } from '../../lib/AppError';
 
-export const deleteBlock = async (db: DbClient, id: string) => {
-  const [deleted] = await db
-    .delete(blocks)
+export const singleBlock = async (db: DbClient, id: string) => {
+  const [block] = await db
+    .select()
+    .from(blocks)
     .where(eq(blocks.id, id))
-    .returning();
+    .limit(1);
 
-  if (!deleted) {
+  if (!block) {
     throw new AppError(`Block not found with id: ${id}`, StatusCodes.NOT_FOUND);
   }
 
-  return deleted;
+  return block;
 };
