@@ -1,5 +1,6 @@
 import { createTemplate } from '../controllers/template/create';
 import { listTemplates } from '../controllers/template/list';
+import { singleTemplate } from '../controllers/template/single';
 import { updateTemplate } from '../controllers/template/update';
 import { deleteTemplate } from '../controllers/template/delete';
 
@@ -23,7 +24,7 @@ export const handleTemplateRoutes = async (
   const match = pathname.match(TEMPLATE_ID_RE);
   if (match) {
     const [, id] = match;
-    // if (method === 'GET') return singleTemplate(request, env, id);
+    if (method === 'GET') return singleTemplate(request, env, id);
     if (method === 'PATCH') return updateTemplate(request, env, id);
     if (method === 'DELETE') return deleteTemplate(request, env, id);
   }
