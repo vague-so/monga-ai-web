@@ -12,6 +12,7 @@ export default [
     route("playground/generations", "routes/playground/generations.tsx"),
     route("playground/models", "routes/playground/models.tsx"),
     route("playground/blocks", "routes/playground/blocks.tsx"),
+    route("playground/templates", "routes/playground/templates.tsx"),
     route("playground/r2", "routes/playground/r2.tsx"),
     route("playground/cost", "routes/playground/cost.tsx"),
   ]),

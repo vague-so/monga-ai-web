@@ -12,6 +12,7 @@ import {
   Menu as MenuIcon,
   User as UserIcon,
   BlocksIcon,
+  BookTemplateIcon,
 } from "lucide-react";
 
 export async function loader() {
@@ -21,6 +22,7 @@ export async function loader() {
 const navigation = [
   { name: "Models", href: "/playground/models", icon: ModelIcon },
   { name: "Blocks", href: "/playground/blocks", icon: BlocksIcon },
+  { name: "Templates", href: "/playground/templates", icon: BookTemplateIcon },
   { name: "Generate", href: "/playground", icon: VideoIcon },
   { name: "Generations", href: "/playground/generations", icon: ClockIcon },
   { name: "R2 Browser", href: "/playground/r2", icon: CloudIcon },
