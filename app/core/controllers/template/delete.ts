@@ -1,19 +1,18 @@
-import { StatusCodes } from "http-status-codes";
-import { createDb } from "../../db/index";
-import { deleteTemplateRecord } from "../../services/template/delete";
-import { ok, fail } from "../../lib/response";
-import { handleError } from "../../lib/handleError";
+import { createDb } from '../../db/index';
+import { deleteTemplate as deleteTemplateService } from '../../services/template/delete';
+import { ok } from '../../lib/response';
+import { handleError } from '../../lib/handleError';
 
 export const deleteTemplate = async (
-	_request: Request,
-	env: Env,
-	id: string,
+  _request: Request,
+  env: Env,
+  id: string,
 ): Promise<Response> => {
-	try {
-		const deleted = await deleteTemplateRecord(createDb(env.DATABASE_URL), id);
-		if (!deleted) return fail("Template not found", StatusCodes.NOT_FOUND);
-		return ok(deleted);
-	} catch (err) {
-		return handleError(err);
-	}
+  try {
+    const db = createDb(env.DATABASE_URL);
+    const deleted = await deleteTemplateService(db, id);
+    return ok(deleted);
+  } catch (err) {
+    return handleError(err);
+  }
 };
